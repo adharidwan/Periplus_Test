@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Periplus All Cart Tests" verbose="1" parallel="none" preserve-order="true">
+    <test name="Cart Test Cases" preserve-order="true">
+        <classes>
+            <class name="com.periplustest.PeriplusCartTest">
+                <methods>
+                    <include name="tc01AddFromProductPageQtyTwoShouldAppearAsTwoInCart"/>
+                    <include name="tc02IncreaseCartQtyShouldIncreaseTotalPrice"/>
+                    <include name="tc03EmptyCartShouldNotAllowCheckout"/>
+                    <include name="tc04MultipleProductsQtyChangeShouldUpdateTotalPrice"/>
+                    <include name="tc05QuantityChangeShouldRecalculateTotalCorrectly"/>
+                    <include name="tc06ProceedToCheckoutFromCart"/>
+                    <include name="tc07ExcessiveQuantityShouldNotBeAccepted"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>
