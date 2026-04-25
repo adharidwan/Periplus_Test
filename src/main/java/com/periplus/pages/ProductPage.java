@@ -74,7 +74,7 @@ public class ProductPage extends BasePage {
             return alert;
         }
 
-        // Some products show limit alerts only after interaction with plus control.
+        // Some products show limit alerts only after interaction with plus control for some reason.
         List<WebElement> plusButtons = driver.findElements(PLUS_BUTTON);
         if (!plusButtons.isEmpty() && plusButtons.get(0).isDisplayed()) {
             WebElement plus = plusButtons.get(0);

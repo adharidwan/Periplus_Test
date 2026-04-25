@@ -165,7 +165,7 @@ public class PeriplusCartTest {
         Assert.assertTrue(quantityBeforeLogout >= 1,
                 "Product quantity should be at least 1 before logout.");
 
-        // Logout through account route, then login again and verify cart state persists.
+        // logout then login again.
         driver.get(config.baseUrl() + "/account/Logout");
         LoginPage loginPage = new LoginPage(driver, config)
                 .open()

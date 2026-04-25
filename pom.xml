@@ -37,7 +37,7 @@
       <version>2.0.17</version>
     </dependency>
 
-    <!-- WebDriverManager (auto-handles ChromeDriver) -->
+    <!-- WebDriverManager -->
     <dependency>
       <groupId>io.github.bonigarcia</groupId>
       <artifactId>webdrivermanager</artifactId>
