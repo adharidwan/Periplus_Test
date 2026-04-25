@@ -3,6 +3,7 @@ package com.periplus.pages;
 import com.periplus.utils.Money;
 import com.periplus.utils.TestConfig;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -12,6 +13,9 @@ import java.util.List;
 import java.util.Locale;
 
 public class CartPage extends BasePage {
+    private static final By UPDATE_BUTTON = By.cssSelector("input[type='submit'][value='Update'], button[title='Update'], button.btn-update, button.btn-cart-update");
+    private String lastAlertMessage = "";
+
     public CartPage(WebDriver driver, TestConfig config) {
         super(driver, config);
     }
@@ -90,12 +94,24 @@ public class CartPage extends BasePage {
 
     public CartPage update() {
         long totalBefore = totalPrice();
-        WebElement updateButton = visible(By.cssSelector("input[type='submit'][value='Update']"));
-        scrollIntoView(updateButton);
-        updateButton.click();
+        clickUpdate();
+        lastAlertMessage = acceptAlertIfPresent();
+        if (isBlank(lastAlertMessage)) {
+            lastAlertMessage = waitAndAcceptAlert(3);
+        }
         waitForPageReady();
         wait.until(driver -> totalPrice() != totalBefore || !quantityInputs().isEmpty() || isEmpty());
         return this;
+    }
+
+    public boolean tryUpdateFirstItemQuantity(int quantity) {
+        setFirstItemQuantity(quantity);
+        update();
+        return firstItemQuantity() == quantity;
+    }
+
+    public String lastAlertMessage() {
+        return lastAlertMessage;
     }
 
     public CartPage removeAllItems() {
@@ -141,6 +157,16 @@ public class CartPage extends BasePage {
     private void setQuantity(WebElement input, int quantity) {
         scrollIntoView(input);
         setFieldValue(input, String.valueOf(quantity));
+    }
+
+    private void clickUpdate() {
+        WebElement updateButton = visible(UPDATE_BUTTON);
+        scrollIntoView(updateButton);
+        try {
+            updateButton.click();
+        } catch (RuntimeException ignored) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", updateButton);
+        }
     }
 
     private int integerFromText(String text) {

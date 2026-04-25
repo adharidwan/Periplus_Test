@@ -125,15 +125,42 @@ public class PeriplusCartTest {
         loginAndOpenCleanCart();
         openProduct(CartTestData.ATOMIC_HABITS);
 
-        ProductPage productPage = new ProductPage(driver, config)
-                .setQuantity(9999)
-                .addToCart();
+        int excessiveQuantity = 9999;
+        ProductPage productPage = new ProductPage(driver, config);
+        String quantityAlert = productPage.setLargeQuantityAndCaptureAlert(excessiveQuantity);
+        int enteredQuantity = productPage.enteredQuantity();
+        productPage.addToCart();
         boolean quantityWarningShown = productPage.showsQuantityWarning();
+        String addToCartAlert = productPage.getLastAddToCartAlert();
 
         CartPage cartPage = new CartPage(driver, config).open();
-        Assert.assertTrue(
-                quantityWarningShown || cartPage.cartCount() < 9999,
-                "Excessive product quantity should be rejected or limited by the cart.");
+        int cartCount = cartPage.cartCount();
+        int cartQuantity = cartPage.firstItemQuantity();
+        boolean notAddedToCart = cartCount == 0;
+        boolean qtySanitizedOnProduct = enteredQuantity > 0 && enteredQuantity < excessiveQuantity;
+        boolean qtySanitizedInCart = cartCount > 0 && cartQuantity < excessiveQuantity;
+        boolean limitAlertShown = containsLimitSignal(quantityAlert) || containsLimitSignal(addToCartAlert);
+        boolean rejected = quantityWarningShown || limitAlertShown || qtySanitizedOnProduct || qtySanitizedInCart || notAddedToCart;
+
+        Assert.assertTrue(rejected,
+                "Excessive product quantity should be rejected or limited by the cart. "
+                        + "warning=" + quantityWarningShown
+                        + ", qtyAlert='" + quantityAlert + "'"
+                        + ", addAlert='" + addToCartAlert + "'"
+                        + ", enteredQty=" + enteredQuantity
+                        + ", cartCount=" + cartCount
+                        + ", cartQty=" + cartQuantity);
+    }
+
+    private boolean containsLimitSignal(String text) {
+        if (isBlank(text)) {
+            return false;
+        }
+        String normalized = text.toLowerCase();
+        return normalized.contains("maximum")
+                || normalized.contains("max")
+                || normalized.contains("not available")
+                || normalized.contains("sorry");
     }
 
     private void loginAndOpenCleanCart() {

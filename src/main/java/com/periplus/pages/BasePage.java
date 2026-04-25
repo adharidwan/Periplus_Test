@@ -5,6 +5,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -103,11 +104,31 @@ abstract class BasePage {
     }
 
     protected void dismissAlertIfPresent() {
+        acceptAlertIfPresent();
+    }
+
+    protected String acceptAlertIfPresent() {
         try {
             Alert alert = driver.switchTo().alert();
+            String text = alert.getText();
             alert.accept();
+            return text == null ? "" : text.trim();
         } catch (RuntimeException ignored) {
-            // No alert is present.
+            return "";
+        }
+    }
+
+    protected String waitAndAcceptAlert(int timeoutSeconds) {
+        try {
+            Alert alert = new WebDriverWait(driver, java.time.Duration.ofSeconds(timeoutSeconds))
+                    .until(ExpectedConditions.alertIsPresent());
+            String text = alert.getText();
+            alert.accept();
+            return text == null ? "" : text.trim();
+        } catch (TimeoutException ignored) {
+            return "";
+        } catch (RuntimeException ignored) {
+            return "";
         }
     }
 }
