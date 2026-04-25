@@ -35,7 +35,7 @@ public class PeriplusCartTest {
     }
 
     @Test
-    public void tc01AddFromProductPageQtyTwoShouldAppearAsTwoInCart() {
+    public void tc01ShouldAddProductWithQtyTwoFromProductPage() {
         loginAndOpenCleanCart();
 
         String productName = addProduct(CartTestData.ATOMIC_HABITS, 2);
@@ -47,7 +47,7 @@ public class PeriplusCartTest {
     }
 
     @Test
-    public void tc02IncreaseCartQtyShouldIncreaseTotalPrice() {
+    public void tc02ShouldIncreaseCartTotalWhenQuantityIncreases() {
         loginAndOpenCleanCart();
         addProduct(CartTestData.ATOMIC_HABITS, 1);
 
@@ -61,7 +61,7 @@ public class PeriplusCartTest {
     }
 
     @Test
-    public void tc03EmptyCartShouldNotAllowCheckout() {
+    public void tc03ShouldBlockCheckoutWhenCartIsEmpty() {
         CartPage cartPage = new CartPage(driver, config).open().removeAllItems().open();
 
         Assert.assertTrue(cartPage.isEmpty(), "Cart should be empty for this test.");
@@ -69,7 +69,7 @@ public class PeriplusCartTest {
     }
 
     @Test
-    public void tc04MultipleProductsQtyChangeShouldUpdateTotalPrice() {
+    public void tc04ShouldUpdateTotalWhenMultipleProductQuantitiesChange() {
         loginAndOpenCleanCart();
         List<Product> products = CartTestData.multipleProducts();
 
@@ -89,7 +89,7 @@ public class PeriplusCartTest {
     }
 
     @Test
-    public void tc05QuantityChangeShouldRecalculateTotalCorrectly() {
+    public void tc05ShouldRecalculateTotalWhenQuantityChanges() {
         loginAndOpenCleanCart();
         addProduct(CartTestData.ATOMIC_HABITS, 1);
 
@@ -105,7 +105,7 @@ public class PeriplusCartTest {
     }
 
     @Test
-    public void tc06ProceedToCheckoutFromCart() {
+    public void tc06ShouldNavigateToCheckoutFromNonEmptyCart() {
         loginAndOpenCleanCart();
         addProduct(CartTestData.ATOMIC_HABITS, 1);
 
@@ -121,7 +121,7 @@ public class PeriplusCartTest {
     }
 
     @Test
-    public void tc07ExcessiveQuantityShouldNotBeAccepted() {
+    public void tc07ShouldRejectExcessiveProductQuantity() {
         loginAndOpenCleanCart();
         openProduct(CartTestData.ATOMIC_HABITS);
 
@@ -152,6 +152,36 @@ public class PeriplusCartTest {
                         + ", cartQty=" + cartQuantity);
     }
 
+    @Test
+    public void tc08ShouldPersistCartAfterLogoutAndLogin() {
+        loginAndOpenCleanCart();
+
+        String productName = addProduct(CartTestData.ATOMIC_HABITS, 1);
+
+        CartPage initialCartPage = new CartPage(driver, config).open();
+        Assert.assertTrue(initialCartPage.containsProduct(productName),
+                "Cart should contain the product before logout.");
+        int quantityBeforeLogout = initialCartPage.firstItemQuantity();
+        Assert.assertTrue(quantityBeforeLogout >= 1,
+                "Product quantity should be at least 1 before logout.");
+
+        // Logout through account route, then login again and verify cart state persists.
+        driver.get(config.baseUrl() + "/account/Logout");
+        LoginPage loginPage = new LoginPage(driver, config)
+                .open()
+                .login(config.email(), config.password());
+        Assert.assertTrue(loginPage.isAuthenticated(),
+                "Re-login should restore an authenticated session.");
+
+        CartPage persistedCartPage = new CartPage(driver, config).open();
+        Assert.assertTrue(persistedCartPage.containsProduct(productName),
+                "Cart should still contain the product after logout and login.");
+        int quantityAfterRelogin = persistedCartPage.firstItemQuantity();
+        Assert.assertTrue(quantityAfterRelogin >= quantityBeforeLogout,
+            "Cart quantity should persist (or increase due to site-side merge) after logout/login. before="
+                + quantityBeforeLogout + ", after=" + quantityAfterRelogin);
+    }
+
     private boolean containsLimitSignal(String text) {
         if (isBlank(text)) {
             return false;
@@ -166,13 +196,30 @@ public class PeriplusCartTest {
     private void loginAndOpenCleanCart() {
         requireConfiguredCredentials();
 
-        LoginPage loginPage = new LoginPage(driver, config)
-                .open()
-                .login(config.email(), config.password());
+        LoginPage loginPage = null;
+        RuntimeException lastLoginException = null;
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            try {
+                loginPage = new LoginPage(driver, config)
+                        .open()
+                        .login(config.email(), config.password());
+                break;
+            } catch (RuntimeException exception) {
+                lastLoginException = exception;
+                if (attempt == 2) {
+                    throw exception;
+                }
+                driver.get(config.baseUrl() + "/account/Login");
+            }
+        }
+
+        String loginFailureDetails = loginPage == null
+                ? (lastLoginException == null ? "No login details were captured." : lastLoginException.getMessage())
+                : loginPage.errorMessage().orElse("No visible error message was found.");
+
         Assert.assertTrue(
-                loginPage.isAuthenticated(),
-                "Login did not create an authenticated session. "
-                        + loginPage.errorMessage().orElse("No visible error message was found."));
+                loginPage != null && loginPage.isAuthenticated(),
+                "Login did not create an authenticated session. " + loginFailureDetails);
 
         new CartPage(driver, config).open().removeAllItems();
     }

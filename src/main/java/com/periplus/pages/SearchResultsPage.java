@@ -17,9 +17,14 @@ public class SearchResultsPage extends BasePage {
         WebElement productLink = findExpectedProductLink(expectedProduct)
                 .orElseGet(() -> visible(By.cssSelector(".product-content h3 a[href*='/p/'], a[href*='/p/']")));
         String productName = textOrExpectedProduct(productLink, expectedProduct);
+        String productHref = productLink.getAttribute("href");
 
-        scrollIntoView(productLink);
-        productLink.click();
+        if (!isBlank(productHref)) {
+            driver.get(productHref);
+        } else {
+            scrollIntoView(productLink);
+            productLink.click();
+        }
 
         wait.until(webDriver -> currentUrlContains("/p/"));
         waitForPageReady();

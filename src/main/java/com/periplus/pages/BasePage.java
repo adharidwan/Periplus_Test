@@ -27,7 +27,12 @@ abstract class BasePage {
     }
 
     protected void openPath(String path) {
-        driver.get(config.baseUrl() + path);
+        String url = config.baseUrl() + path;
+        try {
+            driver.get(url);
+        } catch (RuntimeException ignored) {
+            ((JavascriptExecutor) driver).executeScript("window.location.href = arguments[0];", url);
+        }
         waitForPageReady();
     }
 

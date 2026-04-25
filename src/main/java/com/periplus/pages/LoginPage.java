@@ -2,6 +2,7 @@ package com.periplus.pages;
 
 import com.periplus.utils.TestConfig;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -27,12 +28,16 @@ public class LoginPage extends BasePage {
         password.clear();
         password.sendKeys(passwordText);
 
-        String loginPageUrl = driver.getCurrentUrl();
+        String loginPageUrl = safeCurrentUrl();
         WebElement loginButton = visible(By.cssSelector("#button-login, input[type='submit'][value='Login']"));
-        loginButton.click();
+        try {
+            loginButton.click();
+        } catch (RuntimeException ignored) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", loginButton);
+        }
 
         wait.until(webDriver ->
-                !webDriver.getCurrentUrl().equals(loginPageUrl)
+            hasUrlChangedFrom(loginPageUrl)
                         || elementIsStale(loginButton)
                         || visibleErrorText().isPresent());
         waitForPageReady();
@@ -55,6 +60,27 @@ public class LoginPage extends BasePage {
             return false;
         } catch (StaleElementReferenceException ignored) {
             return true;
+        }
+    }
+
+    private String safeCurrentUrl() {
+        try {
+            return driver.getCurrentUrl();
+        } catch (RuntimeException ignored) {
+            return "";
+        }
+    }
+
+    private boolean hasUrlChangedFrom(String previousUrl) {
+        if (isBlank(previousUrl)) {
+            return false;
+        }
+
+        try {
+            String currentUrl = driver.getCurrentUrl();
+            return !isBlank(currentUrl) && !currentUrl.equals(previousUrl);
+        } catch (RuntimeException ignored) {
+            return false;
         }
     }
 }

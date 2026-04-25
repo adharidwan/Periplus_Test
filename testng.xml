@@ -5,13 +5,14 @@
         <classes>
             <class name="com.periplustest.PeriplusCartTest">
                 <methods>
-                    <include name="tc01AddFromProductPageQtyTwoShouldAppearAsTwoInCart"/>
-                    <include name="tc02IncreaseCartQtyShouldIncreaseTotalPrice"/>
-                    <include name="tc03EmptyCartShouldNotAllowCheckout"/>
-                    <include name="tc04MultipleProductsQtyChangeShouldUpdateTotalPrice"/>
-                    <include name="tc05QuantityChangeShouldRecalculateTotalCorrectly"/>
-                    <include name="tc06ProceedToCheckoutFromCart"/>
-                    <include name="tc07ExcessiveQuantityShouldNotBeAccepted"/>
+                    <include name="tc01ShouldAddProductWithQtyTwoFromProductPage"/>
+                    <include name="tc02ShouldIncreaseCartTotalWhenQuantityIncreases"/>
+                    <include name="tc03ShouldBlockCheckoutWhenCartIsEmpty"/>
+                    <include name="tc04ShouldUpdateTotalWhenMultipleProductQuantitiesChange"/>
+                    <include name="tc05ShouldRecalculateTotalWhenQuantityChanges"/>
+                    <include name="tc06ShouldNavigateToCheckoutFromNonEmptyCart"/>
+                    <include name="tc07ShouldRejectExcessiveProductQuantity"/>
+                    <include name="tc08ShouldPersistCartAfterLogoutAndLogin"/>
                 </methods>
             </class>
         </classes>
