@@ -159,7 +159,7 @@ mvn clean test -Dperiplus.baseUrl=https://www.periplus.com -Dperiplus.timeoutSec
 | TC-SC-005 | Single-line total recalculation | Total reflects quantity `3` after update | Passed | Pass | total prices updated correctly  |
 | TC-SC-006 | Checkout entry point | Cart can enter checkout flow when populated | Passed | Pass | populated cart can goes to checkout page  |
 | TC-SC-007 | Stock limit guard | Excessive quantity is blocked, warned, limited, or not added to cart | Passed | Pass | excessive quantity is blocked by showing warning  |
-| TC-SC-008 | Cart persistence between sessions | Cart content remains after logout/login | Passed | Pass | cart is the same between sessions  |
+| TC-SC-008 | Cart persistence between sessions | Cart content remains after logout/login | Product remained after relogin; quantity merged from `1` to `2` | Pass | site-side cart merge increased the quantity after relogin  |
 
 ## Test Selection
 Each scenario is listed in `testng.xml` under `<methods>`. To run only selected cases, keep the needed `<include>` rows and comment or remove the others.

@@ -68,8 +68,9 @@ public class ProductPage extends BasePage {
     }
 
     public String setLargeQuantityAndCaptureAlert(int quantity) {
-        setQuantity(quantity);
-        String alert = acceptAlertIfPresent();
+        WebElement quantityInput = visible(QUANTITY_INPUT);
+        scrollIntoView(quantityInput);
+        String alert = setFieldValueAndCaptureAlert(quantityInput, String.valueOf(quantity));
         if (!isBlank(alert)) {
             return alert;
         }

@@ -60,13 +60,26 @@ abstract class BasePage {
     }
 
     protected void setFieldValue(WebElement element, String value) {
+        setFieldValueWithoutAlertHandling(element, value);
+        dismissAlertIfPresent();
+    }
+
+    protected String setFieldValueAndCaptureAlert(WebElement element, String value) {
+        setFieldValueWithoutAlertHandling(element, value);
+        String alert = acceptAlertIfPresent();
+        if (!isBlank(alert)) {
+            return alert;
+        }
+        return waitAndAcceptAlert(2);
+    }
+
+    private void setFieldValueWithoutAlertHandling(WebElement element, String value) {
         ((JavascriptExecutor) driver).executeScript(
                 "arguments[0].value = arguments[1];"
                         + "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));"
                         + "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
                 element,
                 value);
-        dismissAlertIfPresent();
     }
 
     protected Optional<String> visibleErrorText() {
